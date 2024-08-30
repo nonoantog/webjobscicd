@@ -10,11 +10,13 @@ env:
   # Relative path to our solution file in the repository
   SOLUTION_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD.sln' 
   # Relative path to our csproj file that defines our WebJob
-  PROJECT_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD/AzureWebJobsCICD.csproj'
-  PROJECT_LOCATION_2: './AzureWebJobsCICD/AzureWebJobsCICD_2/AzureWebJobsCICD_2.csproj'
+  WEBJOB_PROJECT_PATHS: |
+        ./AzureWebJobsCICD/AzureWebJobsCICD/AzureWebJobsCICD.csproj
+        ./AzureWebJobsCICD/AzureWebJobsCICD_2/AzureWebJobsCICD_2.csproj
+        # Add all your web job project paths here
+        
   # This is the path we want our compiled application to be output to
-  WEBJOB_OUTPUT: '/myapp/App_Data/Jobs/Triggered/ExampleWebJob'
-  WEBJOB_OUTPUT_2: '/myapp/App_Data/Jobs/Triggered/ExampleWebJob_2'
+  WEBJOB_OUTPUT: '/myapp/App_Data/Jobs/Triggered/'
   # Set this to the dotnet version to use
   DOTNET_VERSION: '4.8.x'
   # Set this to debug or release versions  
@@ -45,14 +47,22 @@ jobs:
         # Adding detailed logging by using verbosity settings
         run: msbuild ${{ env.SOLUTION_LOCATION }} /p:Configuration=${{ env.CONFIGURATION }} /v:detailed
 
-      # ...and publish our project using the project-side publish configuration
-      - name: dotnet publish web job 1
-        # Adding detailed logging for dotnet publish
-        run: dotnet publish ${{ env.PROJECT_LOCATION }} -c ${{ env.CONFIGURATION }} -o ${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT }} -v detailed
+      - name: Build and Deploy loop over web jobs
+        run: |
+          $webjobPaths = "${{ env.WEBJOB_PROJECT_PATHS }}".Split("`n")
+          foreach ($path in $webjobPaths) {
+            Write-Output "Building and deploying web job: $path"
+            
+            # Extract the project name from the path and get the desired substring
+            $projectName = Split-Path $path -LeafBase
+            $substringIndex = $projectName.LastIndexOf('.') + 1
+            $jobName = $projectName 
+            #.Substring($substringIndex)
 
-      - name: dotnet publish web job 2
-        # Adding detailed logging for dotnet publish
-        run: dotnet publish ${{ env.PROJECT_LOCATION_2 }} -c ${{ env.CONFIGURATION }} -o ${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT_2 }} -v detailed
+            Write-Output "Extracted job name: $jobName"
+
+            msbuild $path /p:Configuration=${{ env.CONFIGURATION }} /p:OutputPath=${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT }}$jobName /verbosity:detailed /t:Publish
+          }     
 
       # Uses the upload-artifact@v4 Action to upload the output of 
       # that publish step to a temporary directory 
