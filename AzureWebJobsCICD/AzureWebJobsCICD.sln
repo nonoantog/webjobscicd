@@ -5,6 +5,8 @@ VisualStudioVersion = 17.10.35027.167
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureWebJobsCICD", "AzureWebJobsCICD\AzureWebJobsCICD.csproj", "{78CF2905-8270-4684-B168-AA68817F3462}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "AzureWebJobsCICD_2", "AzureWebJobsCICD_2\AzureWebJobsCICD_2.csproj", "{7B9DFCC2-496C-4894-871B-08AFF2664565}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{78CF2905-8270-4684-B168-AA68817F3462}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78CF2905-8270-4684-B168-AA68817F3462}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78CF2905-8270-4684-B168-AA68817F3462}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7B9DFCC2-496C-4894-871B-08AFF2664565}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7B9DFCC2-496C-4894-871B-08AFF2664565}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7B9DFCC2-496C-4894-871B-08AFF2664565}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7B9DFCC2-496C-4894-871B-08AFF2664565}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
