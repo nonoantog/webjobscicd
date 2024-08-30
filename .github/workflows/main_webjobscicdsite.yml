@@ -7,34 +7,20 @@ on:
 
 jobs:
   build-and-deploy:
-    runs-on: windows-2019
+    runs-on: windows-latest
 
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Set up .NET Framework
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: '4.8.x'  # Specify .NET Framework version
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v1.1
 
-      - name: Build WebJob Projects
-        run: |
-          # Restore and build for .NET Framework 4.8
-          nuget restore
-          msbuild ./AzureWebJobsCICD/AzureWebJobsCICD/AzureWebJobsCICD.csproj /p:Configuration=Release
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v1.0.5
 
-      - name: Zip the WebJob package
-        run: |
-          Compress-Archive -Path ./AzureWebJobsCICD/AzureWebJobsCICD/bin/Release/net48/* -DestinationPath ./AzureWebJobsCICD/AzureWebJobsCICD/bin/Release/webjob1.zip
+      - name: Restore NuGet packages
+        run: nuget restore
 
-      - name: Login to Azure
-        uses: azure/login@v2
-        with:
-          client-id: ${{ secrets.AZUREAPPSERVICE_CLIENTID_172309902F204C838307883FFF90678E }}
-          tenant-id: ${{ secrets.AZUREAPPSERVICE_TENANTID_2A088B4292524442885AFA9DDEDCD648 }}
-          subscription-id: ${{ secrets.AZUREAPPSERVICE_SUBSCRIPTIONID_25D59072EF704AE7BBEAAC2BA3C1D4EB }}
-
-      - name: Deploy WebJob via Azure CLI
-        run: |
-         az webapp deployment source config-zip --resource-group WebJobsRG --name webjob1_test --src-path ./AzureWebJobsCICD/AzureWebJobsCICD/bin/Release/webjob1.zip
+      - name: Build with MSBuild
+        run: msbuild AzureWebJobsCICD/AzureWebJobsCICD.sln /p:Configuration=Release
