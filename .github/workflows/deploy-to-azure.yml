@@ -11,8 +11,10 @@ env:
   SOLUTION_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD.sln' 
   # Relative path to our csproj file that defines our WebJob
   PROJECT_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD/AzureWebJobsCICD.csproj'
+  PROJECT_LOCATION_2: './AzureWebJobsCICD/AzureWebJobsCICD_2/AzureWebJobsCICD_2.csproj'
   # This is the path we want our compiled application to be output to
   WEBJOB_OUTPUT: '/myapp/App_Data/Jobs/Triggered/ExampleWebJob'
+  WEBJOB_OUTPUT_2: '/myapp/App_Data/Jobs/Triggered/ExampleWebJob_2'
   # Set this to the dotnet version to use
   DOTNET_VERSION: '4.8.x'
   # Set this to debug or release versions  
@@ -44,9 +46,13 @@ jobs:
         run: msbuild ${{ env.SOLUTION_LOCATION }} /p:Configuration=${{ env.CONFIGURATION }} /v:detailed
 
       # ...and publish our project using the project-side publish configuration
-      - name: dotnet publish
+      - name: dotnet publish web job 1
         # Adding detailed logging for dotnet publish
         run: dotnet publish ${{ env.PROJECT_LOCATION }} -c ${{ env.CONFIGURATION }} -o ${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT }} -v detailed
+
+      - name: dotnet publish web job 2
+        # Adding detailed logging for dotnet publish
+        run: dotnet publish ${{ env.PROJECT_LOCATION_2 }} -c ${{ env.CONFIGURATION }} -o ${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT_2 }} -v detailed
 
       # Uses the upload-artifact@v4 Action to upload the output of 
       # that publish step to a temporary directory 
@@ -86,9 +92,3 @@ jobs:
           app-name: ${{ env.APPLICATION_NAME }}
           slot-name: 'Production'
           package: .
-
-      # Cleanup artifacts after deployment to save space
-      - name: Cleanup artifacts
-        run: |
-          echo "Cleaning up artifacts..."
-          rm ${{ runner.workspace }}/myapp/
