@@ -8,7 +8,11 @@ on:
 jobs:
   build-and-deploy:
     runs-on: windows-latest
-
+    
+    env:
+      SOLUTION_PATH: AzureWebJobsCICD/AzureWebJobsCICD.sln  # Define the solution path here
+      CONFIGURATION: Release
+      
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -20,7 +24,7 @@ jobs:
         uses: NuGet/setup-nuget@v2
 
       - name: Restore NuGet packages
-        run: nuget restore AzureWebJobsCICD/AzureWebJobsCICD.sln
+        run: nuget restore ${{ env.SOLUTION_PATH }}
         
       - name: Build with MSBuild
-        run: msbuild AzureWebJobsCICD/AzureWebJobsCICD.sln /p:Configuration=Release
+        run: msbuild ${{ env.SOLUTION_PATH }} /p:Configuration=${{ env.CONFIGURATION }}
