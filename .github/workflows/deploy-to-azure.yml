@@ -37,10 +37,10 @@ jobs:
         uses: NuGet/setup-nuget@v2
 
       - name: Restore NuGet packages
-        run: nuget restore ${{ env.SOLUTION_PATH }}
+        run: nuget restore ${{ env.SOLUTION_LOCATION }}
 
       - name: Build with MSBuild
-        run: msbuild ${{ env.SOLUTION_PATH }} /p:Configuration=${{ env.CONFIGURATION }}
+        run: msbuild ${{ env.SOLUTION_LOCATION }} /p:Configuration=${{ env.CONFIGURATION }}
 
       # ...and publish our project using the project-side publish configuration
       - name: dotnet publish
