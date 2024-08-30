@@ -15,6 +15,12 @@ jobs:
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore AzureWebJobsCICD/AzureWebJobsCICD.sln
         
       - name: Build with MSBuild
         run: msbuild AzureWebJobsCICD/AzureWebJobsCICD.sln /p:Configuration=Release
