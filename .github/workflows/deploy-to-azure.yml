@@ -1,0 +1,55 @@
+name: Build and deploy dotnet framework app to an Azure WebJob in an Azure App Service
+
+on:
+  push:
+    branches:
+      - main # This will run when pushes are made to our main branch 
+             # of the containing repository
+  workflow_dispatch:
+
+env:
+  # relative path to our solution file in the repository
+  SOLUTION_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD.sln' 
+  # relative path to our csproj file that defines our WebJob
+  PROJECT_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD/AzureWebJobsCICD.csproj'
+  # this is the path we want our want our compiled application to be output to
+  WEBJOB_OUTPUT: '/myapp/App_Data/Jobs/Triggered/ExampleWebJob'
+  # set this to the dotnet version to use
+  DOTNET_VERSION: '4.8.x'
+  # set this to debug or release versions  
+  CONFIGURATION: Release
+  # The name of our Application we're deploying - this is the name of our App Service in Azure
+  APPLICATION_NAME: 'WebJobsCICDSite'  
+      
+# defines our jobs. Here we have two: build and deploy
+jobs:
+  build:
+    runs-on: windows-latest
+
+    # the steps of our build job
+    steps:
+      - uses: actions/checkout@v4 # checkout the code from the repo
+
+      - name: Setup MSBuild
+        uses: microsoft/setup-msbuild@v2
+
+      - name: Setup NuGet
+        uses: NuGet/setup-nuget@v2
+
+      - name: Restore NuGet packages
+        run: nuget restore ${{ env.SOLUTION_PATH }}
+
+      - name: Build with MSBuild
+        run: msbuild ${{ env.SOLUTION_PATH }} /p:Configuration=${{ env.CONFIGURATION }}
+
+      # ...and publish our project using the project-side publish configuration
+      - name: dotnet publish
+        run: dotnet publish ${{ env.PROJECT_LOCATION }} -c ${{ env.CONFIGURATION }} -o ${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT }}
+
+      # uses the upload-artifact@v3 Action to upload the output of 
+      # that publish step to a temporary directory 
+      - name: Upload artifact for deployment job
+        uses: actions/upload-artifact@v3
+        with:
+          name: .net-app
+          path: ${{ env.DOTNET_ROOT }}/myapp/
