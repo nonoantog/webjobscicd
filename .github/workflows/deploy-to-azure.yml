@@ -91,4 +91,4 @@ jobs:
       - name: Cleanup artifacts
         run: |
           echo "Cleaning up artifacts..."
-          rm -rf ${{ runner.workspace }}/myapp/
+          rm ${{ runner.workspace }}/myapp/
