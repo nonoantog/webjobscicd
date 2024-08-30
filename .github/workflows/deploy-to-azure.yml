@@ -4,31 +4,31 @@ on:
   push:
     branches:
       - main # This will run when pushes are made to our main branch 
-             # of the containing repository
   workflow_dispatch:
 
 env:
-  # relative path to our solution file in the repository
+  # Relative path to our solution file in the repository
   SOLUTION_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD.sln' 
-  # relative path to our csproj file that defines our WebJob
+  # Relative path to our csproj file that defines our WebJob
   PROJECT_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD/AzureWebJobsCICD.csproj'
-  # this is the path we want our want our compiled application to be output to
+  # This is the path we want our compiled application to be output to
   WEBJOB_OUTPUT: '/myapp/App_Data/Jobs/Triggered/ExampleWebJob'
-  # set this to the dotnet version to use
+  # Set this to the dotnet version to use
   DOTNET_VERSION: '4.8.x'
-  # set this to debug or release versions  
+  # Set this to debug or release versions  
   CONFIGURATION: Release
   # The name of our Application we're deploying - this is the name of our App Service in Azure
   APPLICATION_NAME: 'WebJobsCICDSite'  
       
-# defines our jobs. Here we have two: build and deploy
+# Defines our jobs. Here we have two: build and deploy
 jobs:
   build:
-    runs-on: windows-latest
+    # Specify a fixed Windows version to avoid breaking changes with future updates
+    runs-on: windows-2019
 
-    # the steps of our build job
+    # The steps of our build job
     steps:
-      - uses: actions/checkout@v4 # checkout the code from the repo
+      - uses: actions/checkout@v4 # Checkout the code from the repo
 
       - name: Setup MSBuild
         uses: microsoft/setup-msbuild@v2
@@ -40,13 +40,15 @@ jobs:
         run: nuget restore ${{ env.SOLUTION_LOCATION }}
 
       - name: Build with MSBuild
-        run: msbuild ${{ env.SOLUTION_LOCATION }} /p:Configuration=${{ env.CONFIGURATION }}
+        # Adding detailed logging by using verbosity settings
+        run: msbuild ${{ env.SOLUTION_LOCATION }} /p:Configuration=${{ env.CONFIGURATION }} /v:detailed
 
       # ...and publish our project using the project-side publish configuration
       - name: dotnet publish
-        run: dotnet publish ${{ env.PROJECT_LOCATION }} -c ${{ env.CONFIGURATION }} -o ${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT }}
+        # Adding detailed logging for dotnet publish
+        run: dotnet publish ${{ env.PROJECT_LOCATION }} -c ${{ env.CONFIGURATION }} -o ${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT }} -v detailed
 
-      # uses the upload-artifact@v4 Action to upload the output of 
+      # Uses the upload-artifact@v4 Action to upload the output of 
       # that publish step to a temporary directory 
       - name: Upload artifact for deployment job
         uses: actions/upload-artifact@v4
@@ -55,13 +57,14 @@ jobs:
           path: ${{ env.DOTNET_ROOT }}/myapp/
 
   deploy:
-    runs-on: windows-latest
+    # Specify a fixed Windows version to avoid breaking changes with future updates
+    runs-on: windows-2019
     needs: build
     environment:
       name: 'Production'
       url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
     permissions:
-      id-token: write #This is required for requesting the JWT
+      id-token: write # This is required for requesting the JWT
 
     steps:
       - name: Download artifact from build job
@@ -83,3 +86,9 @@ jobs:
           app-name: ${{ env.APPLICATION_NAME }}
           slot-name: 'Production'
           package: .
+
+      # Cleanup artifacts after deployment to save space
+      - name: Cleanup artifacts
+        run: |
+          echo "Cleaning up artifacts..."
+          rm -rf ${{ runner.workspace }}/myapp/
