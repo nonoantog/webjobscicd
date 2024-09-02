@@ -46,23 +46,27 @@ jobs:
         # Adding detailed logging by using verbosity settings
         run: msbuild ${{ env.SOLUTION_LOCATION }} /p:Configuration=${{ env.CONFIGURATION }} /v:detailed
 
+      - name: Show Current Directory
+        run: pwd
+
+      - name: List Directory Contents
+        run: dir
+
       - name: Build and Deploy loop over web jobs
         run: |
           $webjobPaths = "${{ env.WEBJOB_PROJECT_PATHS }}".Split("`n")
-          
-          # Show the content of the current directory
-          Write-Output "Current directory content:"
-          Get-ChildItem | Format-List
-          
-          foreach ($path in $webjobPaths) {
+                   
+          foreach ($path in $webjobPaths) {           
+            $path = $path.Trim()  # Remove any leading or trailing spaces
+            
             # Check if the path is not empty or only whitespace
             if (-not [string]::IsNullOrWhiteSpace($path)) {
-              Write-Output "Building and deploying web job: $path"
+              Write-Output "Building and deploying web job: $path"       
 
-              # Change to the directory containing the current web job project
-              # Set-Location (Split-Path $path -Parent)
+              # Verify the current directory content
+              Write-Output "Current directory content before building:"
+              Get-ChildItem -Path (Split-Path $path -Parent) | Format-List
               
-             
               # Extract the project name from the path and get the desired substring
               $projectName = Split-Path $path -LeafBase
               $substringIndex = $projectName.LastIndexOf('.') + 1
