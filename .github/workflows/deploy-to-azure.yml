@@ -50,18 +50,30 @@ jobs:
         run: |
           $webjobPaths = "${{ env.WEBJOB_PROJECT_PATHS }}".Split("`n")
           foreach ($path in $webjobPaths) {
-            Write-Output "Building and deploying web job: $path"
-            
-            # Extract the project name from the path and get the desired substring
-            $projectName = Split-Path $path -LeafBase
-            $substringIndex = $projectName.LastIndexOf('.') + 1
-            $jobName = $projectName 
-            #.Substring($substringIndex)
+            # Check if the path is not empty or only whitespace
+            if (-not [string]::IsNullOrWhiteSpace($path)) {
+              Write-Output "Building and deploying web job: $path"
 
-            Write-Output "Extracted job name: $jobName"
-            Write-Output "path: $path"
-
-            msbuild $path /p:Configuration=${{ env.CONFIGURATION }} /p:OutputPath=${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT }}$jobName /verbosity:detailed /t:Publish
+              # Change to the directory containing the current web job project
+              # Set-Location (Split-Path $path -Parent)
+              
+              # Show the content of the current directory
+              Write-Output "Current directory content:"
+              Get-ChildItem | Format-List
+              
+              # Extract the project name from the path and get the desired substring
+              $projectName = Split-Path $path -LeafBase
+              $substringIndex = $projectName.LastIndexOf('.') + 1
+              $jobName = $projectName 
+              # .Substring($substringIndex)
+      
+              Write-Output "Extracted job name: $jobName"
+              Write-Output "path: $path"
+      
+              msbuild $path /p:Configuration=${{ env.CONFIGURATION }} /p:OutputPath="${{ env.DOTNET_ROOT }}${{ env.WEBJOB_OUTPUT }}\$jobName" /verbosity:detailed /t:Publish
+            } else {
+              Write-Output "Skipped empty or whitespace path."
+            }
           }     
 
       # Uses the upload-artifact@v4 Action to upload the output of 
