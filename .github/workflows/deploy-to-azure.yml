@@ -11,8 +11,8 @@ env:
   SOLUTION_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD.sln' 
   # Relative path to our csproj file that defines our WebJob
   WEBJOB_PROJECT_PATHS: |
-        ./AzureWebJobsCICD/AzureWebJobsCICD.csproj
-        ./AzureWebJobsCICD_2/AzureWebJobsCICD_2.csproj
+        AzureWebJobsCICD/AzureWebJobsCICD/AzureWebJobsCICD.csproj
+        AzureWebJobsCICD/AzureWebJobsCICD_2/AzureWebJobsCICD_2.csproj
         
   # This is the path we want our compiled application to be output to
   WEBJOB_OUTPUT: '/myapp/App_Data/Jobs/Triggered/'
