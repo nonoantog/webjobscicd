@@ -11,8 +11,8 @@ env:
   SOLUTION_LOCATION: './AzureWebJobsCICD/AzureWebJobsCICD.sln' 
   # Relative path to our csproj file that defines our WebJob
   WEBJOB_PROJECT_PATHS: |
-        AzureWebJobsCICD/AzureWebJobsCICD/AzureWebJobsCICD.csproj
-        AzureWebJobsCICD/AzureWebJobsCICD_2/AzureWebJobsCICD_2.csproj
+        './AzureWebJobsCICD/AzureWebJobsCICD/AzureWebJobsCICD.csproj'
+        './AzureWebJobsCICD/AzureWebJobsCICD_2/AzureWebJobsCICD_2.csproj'
         
   # This is the path we want our compiled application to be output to
   WEBJOB_OUTPUT: '/myapp/App_Data/Jobs/Triggered/'
@@ -49,6 +49,11 @@ jobs:
       - name: Build and Deploy loop over web jobs
         run: |
           $webjobPaths = "${{ env.WEBJOB_PROJECT_PATHS }}".Split("`n")
+          
+          # Show the content of the current directory
+          Write-Output "Current directory content:"
+          Get-ChildItem | Format-List
+          
           foreach ($path in $webjobPaths) {
             # Check if the path is not empty or only whitespace
             if (-not [string]::IsNullOrWhiteSpace($path)) {
@@ -57,10 +62,7 @@ jobs:
               # Change to the directory containing the current web job project
               # Set-Location (Split-Path $path -Parent)
               
-              # Show the content of the current directory
-              Write-Output "Current directory content:"
-              Get-ChildItem | Format-List
-              
+             
               # Extract the project name from the path and get the desired substring
               $projectName = Split-Path $path -LeafBase
               $substringIndex = $projectName.LastIndexOf('.') + 1
